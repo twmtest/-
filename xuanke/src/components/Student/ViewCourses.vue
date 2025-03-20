@@ -32,13 +32,14 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useStore } from 'vuex';
-import { getCourses } from '@/services/api';
+import { getCourses, getStudentApplications } from '@/services/api';
 
 const store = useStore();
 const searchName = ref('');
 const searchTeacher = ref('');
 const searchSchedule = ref('');
 const courses = ref([]);
+const studentApplications = ref([]);
 
 const filteredCourses = computed(() => {
   return courses.value.filter(course => {
@@ -55,15 +56,23 @@ const selectedCourses = computed(() => store.state.student.selectedCourses);
 const fetchCourses = async () => {
   try {
     courses.value = await getCourses();
+    studentApplications.value = await getStudentApplications(store.state.student.studentId);
   } catch (error) {
     console.error('获取课程失败:', error.message);
   }
 };
 
 const applyForCourse = async (courseId) => {
+  const existingApplication = studentApplications.value.find(app => app.course_id === courseId && app.status !== '已驳回');
+  if (existingApplication) {
+    alert('您已申请过此课程，不能重复申请');
+    return;
+  }
+  
   try {
     await store.dispatch('student/applyCourse', courseId);
     alert('选课申请已提交，等待教师审核');
+    studentApplications.value = await getStudentApplications(store.state.student.studentId);
   } catch (error) {
     alert(error.message);
   }

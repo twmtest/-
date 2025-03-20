@@ -10,13 +10,11 @@
         <el-table-column label="操作">
           <template #default="{ row }">
             <el-button 
+              v-if="row.status === '已选课'"
               @click="confirmDropCourse(row)" 
               size="small" 
-              type="danger" 
-              :disabled="row.hasGrade"
-            >
-              退课
-            </el-button>
+              type="danger">申请退课</el-button>
+            <span v-else>{{ row.status }}</span>
           </template>
         </el-table-column>
       </el-table>
@@ -37,44 +35,43 @@
   
   <script setup>
     import { ref, onMounted } from 'vue';
-    import { getStudentCourses, dropCourse as apiDropCourse } from '@/services/api';
+    import { getStudentSelections, applyDropCourse } from '@/services/api';
 
     const selectedCourses = ref([]);
     const studentId = localStorage.getItem('studentId'); // 确保 studentId 已正确存储
     const showDropConfirmDialog = ref(false);
     const courseToDrop = ref({});
 
-    onMounted(async () => {
+    const fetchCourses = async () => {
       try {
-        const courses = await getStudentCourses(studentId);
-        selectedCourses.value = courses.map(course => ({
-          ...course,
-          hasGrade: course.grade !== null && course.grade !== undefined
-        }));
-      } catch (error) {
-        console.error('获取选课信息失败:', error.message);
-      }
-    });
-
-    const confirmDropCourse = (course) => {
-      courseToDrop.value = course;
-      showDropConfirmDialog.value = true;
-    };
-
-    const dropCourse = async () => {
-      try {
-        await apiDropCourse(studentId, courseToDrop.value.course_id);
-        showDropConfirmDialog.value = false;
-        alert('退课成功');
-        const courses = await getStudentCourses(studentId);
-        selectedCourses.value = courses.map(course => ({
-          ...course,
-          hasGrade: course.grade !== null && course.grade !== undefined
-        }));
+        const courses = await getStudentSelections(studentId);
+        selectedCourses.value = courses.filter(course => course.status === '已选课');
       } catch (error) {
         alert(error.message);
       }
     };
+
+    const confirmDropCourse = async (course) => {
+      try {
+        await applyDropCourse(studentId, course.courseId);
+        fetchCourses();
+      } catch (error) {
+        alert('申请退课失败: ' + error.message);
+      }
+    };
+
+    const dropCourse = async () => {
+      try {
+        await applyDropCourse(studentId, courseToDrop.value.courseId);
+        showDropConfirmDialog.value = false;
+        alert('退课成功');
+        fetchCourses();
+      } catch (error) {
+        alert(error.message);
+      }
+    };
+
+    onMounted(fetchCourses);
   </script>
   
   <style scoped>

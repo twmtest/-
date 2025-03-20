@@ -35,7 +35,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 import CourseManagement from './CourseManagement.vue'
 import StudentGradesManagement from './StudentGradesManagement.vue'
 import CourseSelectionManagement from './CourseSelectionManagement.vue'
@@ -43,8 +43,8 @@ import ManageCourseApplications from './ManageCourseApplications.vue'
 
 const currentMenu = ref('1')
 
-// 根据 currentMenu 的值计算当前显示的组件
-const currentComponent = ref(CourseManagement)
+// 使用 shallowRef 而不是 ref
+const currentComponent = shallowRef(CourseManagement)
 
 const handleMenuSelect = (index) => {
   currentMenu.value = index
