@@ -5,11 +5,10 @@
         <h1>学生网上选课系统</h1>
       </div>
       <div class="header-right">
-        <span class="user-name">{{ studentName }}</span>
+        <span class="user-name">{{ userName }}</span>
         <el-button link @click="logout" class="logout-button">退出</el-button>
       </div>
     </header>
-    <!-- 根据身份展示不同主页 -->
     <StudentHome v-if="identity === 'student'" />
     <TeacherHome v-else-if="identity === 'teacher'" />
     <AdminHome v-else-if="identity === 'admin'" />
@@ -18,28 +17,33 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import StudentHome from '@/components/Student/StudentHome.vue'
-import TeacherHome from '@/components/Teacher/TeacherHome.vue'
-import AdminHome from '@/components/Admin/AdminHome.vue'
+import { computed } from 'vue';
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
+import StudentHome from '@/components/Student/StudentHome.vue';
+import TeacherHome from '@/components/Teacher/TeacherHome.vue';
+import AdminHome from '@/components/Admin/AdminHome.vue';
 
-const identity = ref('')
-const studentName = ref('') // 存储学生姓名
-const router = useRouter()
+const store = useStore();
+const router = useRouter();
 
-// 页面加载后从 localStorage 中获取身份信息和姓名
-onMounted(() => {
-  identity.value = localStorage.getItem('identity') || ''
-  studentName.value = localStorage.getItem('studentName') || '用户' // 默认值为 '用户'
-})
+const identity = computed(() => store.state.identity);
 
-// 退出登录
+const userName = computed(() => {
+  if (identity.value === 'student') {
+    return store.state.student.studentName;
+  } else if (identity.value === 'teacher') {
+    return store.state.teacher.teacherName;
+  } else if (identity.value === 'admin') {
+    return store.state.admin.adminName; // 假设管理员也有名字
+  }
+  return '用户';
+});
+
 const logout = () => {
-  localStorage.removeItem('identity')
-  localStorage.removeItem('studentName') // 清除姓名
-  router.push({ name: 'Login' })
-}
+  store.dispatch('logout');
+  router.push({ name: 'Login' });
+};
 </script>
 
 <script>

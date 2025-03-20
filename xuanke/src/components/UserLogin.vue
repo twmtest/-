@@ -3,7 +3,6 @@
     <div class="login-box">
       <h2>学生网上选课系统</h2>
       <form @submit.prevent="handleLogin">
-        <!-- 身份选择 -->
         <div class="input-group">
           <label for="identity">身份选择</label>
           <select id="identity" v-model="identity">
@@ -12,7 +11,6 @@
             <option value="admin">管理员</option>
           </select>
         </div>
-        <!-- 用户名输入 -->
         <div class="input-group">
           <label for="username">学号</label>
           <input
@@ -23,7 +21,6 @@
             required
           />
         </div>
-        <!-- 密码输入 -->
         <div class="input-group">
           <label for="password">密码</label>
           <input
@@ -41,41 +38,26 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { login } from '@/services/api' // 导入登录接口
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 
-// 获取路由实例
-const router = useRouter()
+const store = useStore();
+const router = useRouter();
 
-// 定义响应式变量
-const identity = ref('student') // 默认身份为学生
-const username = ref('')
-const password = ref('')
+const identity = ref('student');
+const username = ref('');
+const password = ref('');
 
-// 登录处理函数
 const handleLogin = async () => {
   try {
-    const response = await login(identity.value, username.value, password.value)
-    localStorage.setItem('token', response.token)
-    localStorage.setItem('identity', identity.value)
-    localStorage.setItem('studentName', response.name)
-    
-    // 根据身份存储相应的 ID
-    if (identity.value === 'student') {
-      localStorage.setItem('studentId', response.studentId)
-    } else if (identity.value === 'teacher') {
-      localStorage.setItem('teacherId', response.teacherId)
-    } else if (identity.value === 'admin') {
-      localStorage.setItem('adminId', response.adminId)
-    }
-    
-    router.push({ name: 'Home' })
+    await store.dispatch('login', { identity: identity.value, username: username.value, password: password.value });
+    router.push({ name: 'Home' });
   } catch (error) {
-    console.error('登录失败:', error.message)
-    alert(error.message)
+    console.error('登录失败:', error.message);
+    alert(error.message);
   }
-}
+};
 </script>
 
 <style scoped>

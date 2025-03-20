@@ -14,14 +14,10 @@ export const login = async (identity, username, password) => {
   }
 };
 
-// 获取所有课程信息
+// 获取所有课程
 export const getCourses = async () => {
-  try {
-    const response = await api.get('/courses');
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response.data.message || '获取课程失败');
-  }
+  const response = await api.get('/courses');
+  return response.data;
 };
 
 // 获取学生选课信息
@@ -87,32 +83,20 @@ export const updateGrade = async (grade) => {
 
 // 更新课程信息
 export const updateCourse = async (course) => {
-  try {
-    const response = await api.put(`/courses/${course.course_id}`, course);
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response.data.message || '更新课程失败');
-  }
+  const response = await api.put(`/courses/${course.course_id}`, course);
+  return response.data;
 };
 
-// 添加新课程
+// 添加课程
 export const addCourse = async (course) => {
-  try {
-    const response = await api.post('/courses', course);
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response.data.message || '添加课程失败');
-  }
+  const response = await api.post('/courses', course);
+  return response.data;
 };
 
 // 删除课程
 export const deleteCourse = async (courseId) => {
-  try {
-    const response = await api.delete(`/courses/${courseId}`);
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response.data.message || '删除课程失败');
-  }
+  const response = await api.delete(`/courses/${courseId}`);
+  return response.data;
 };
 
 // 获取教师教授课程的选课记录
@@ -183,6 +167,12 @@ export const getStudentSelections = async (studentId) => {
   } catch (error) {
     throw new Error(error.response.data.message || '获取已选课程失败');
   }
+};
+
+// 申请课程接口
+export const applyCourse = async (studentId, courseId) => {
+  const response = await api.post(`/student/${studentId}/apply-course`, { courseId });
+  return response.data;
 };
 
 export default api; 
