@@ -168,9 +168,12 @@ export const getStudentApplications = async (studentId) => {
 export const getStudentSelections = async (studentId) => {
   try {
     const response = await api.get(`/student/${studentId}/selections`);
-    return response.data;
+    return response.data.map(course => ({
+      ...course,
+      courseId: course.course_id,
+    }));
   } catch (error) {
-    throw new Error(error.response.data.message || '获取已选课程失败');
+    throw new Error(error.response?.data?.message || '获取已选课程失败');
   }
 };
 
@@ -206,38 +209,56 @@ export const getStatistics = async () => {
 
 // 学生申请退课
 export const applyDropCourse = async (studentId, courseId) => {
-  const response = await api.post(`/student/${studentId}/apply-drop-course`, { courseId });
-  return response.data;
+  try {
+    const response = await api.post(`/student/${studentId}/apply-drop-course`, { courseId });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || '申请退课失败');
+  }
 };
 
-// 获取退课申请
+// 获取教师的退课申请
 export const getDropRequests = async (teacherId) => {
-  const response = await api.get(`/teacher/${teacherId}/drop-requests`);
-  return response.data;
+  try {
+    const response = await api.get(`/teacher/${teacherId}/drop-requests`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || '获取退课申请失败');
+  }
 };
 
-// 同意退课申请
-export const approveDrop = async (studentId, courseId) => {
-  const response = await api.post('/teacher/approve-drop', { studentId, courseId });
-  return response.data;
+// 教师同意退课申请
+export const approveDropRequest = async (studentId, courseId) => {
+  try {
+    const response = await api.post('/teacher/approve-drop', { studentId, courseId });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || '同意退课申请失败');
+  }
 };
 
-// 驳回退课申请
-export const rejectDrop = async (studentId, courseId) => {
-  const response = await api.post('/teacher/reject-drop', { studentId, courseId });
-  return response.data;
+// 教师驳回退课申请
+export const rejectDropRequest = async (studentId, courseId) => {
+  try {
+    const response = await api.post('/teacher/reject-drop', { studentId, courseId });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || '驳回退课申请失败');
+  }
 };
 
-// 教师审核选课申请
-export const approveApplication = async (applicationId) => {
-  const response = await api.post('/teacher/approve-application', { applicationId });
-  return response.data;
-};
-
-// 教师驳回选课申请
-export const rejectApplication = async (applicationId) => {
-  const response = await api.post('/teacher/reject-application', { applicationId });
-  return response.data;
+// 批量上传学生成绩
+export const uploadGradesBatch = async (teacherId, data) => {
+  try {
+    const response = await api.post(`/teacher/${teacherId}/upload-grades`, data, {
+      headers: {
+        'Content-Type': data instanceof FormData ? 'multipart/form-data' : 'application/json'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || '上传成绩失败');
+  }
 };
 
 export default api; 

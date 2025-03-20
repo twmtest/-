@@ -57,19 +57,19 @@ router.delete('/student/:studentId/drop-course/:courseId', async (req, res) => {
   }
 });
 
-// 获取学生成绩信息的接口
+// 获取学生成绩
 router.get('/student/:studentId/grades', async (req, res) => {
   const { studentId } = req.params;
   try {
     const [grades] = await pool.query(`
-      SELECT g.course_id, c.name AS courseName, g.regular_score, g.midterm_score, g.final_score, g.total_score
+      SELECT g.grade_id, c.name AS courseName, g.regular_score, g.midterm_score, g.final_score, g.total_score
       FROM grades g
       JOIN courses c ON g.course_id = c.course_id
       WHERE g.student_id = ?
     `, [studentId]);
     res.json(grades);
   } catch (error) {
-    console.error(error);
+    console.error('获取成绩失败:', error.message);
     res.status(500).json({ message: '服务器错误' });
   }
 });
@@ -96,11 +96,27 @@ router.get('/student/:studentId/selections', async (req, res) => {
 router.post('/student/:studentId/apply-drop-course', async (req, res) => {
   const { studentId } = req.params;
   const { courseId } = req.body;
+  
+  console.log('收到退课申请:', { studentId, courseId, courseIdType: typeof courseId });
+  
   try {
-    await pool.query(`UPDATE course_selections SET status = '申请退课' WHERE student_id = ? AND course_id = ?`, [studentId, courseId]);
+    // 先查询当前状态
+    const [currentStatus] = await pool.query(
+      `SELECT status FROM course_selections WHERE student_id = ? AND course_id = ?`, 
+      [studentId, courseId]
+    );
+    console.log('当前选课状态:', currentStatus);
+
+    // 更新选课状态为"申请退课"
+    const [updateResult] = await pool.query(
+      `UPDATE course_selections SET status = '申请退课' WHERE student_id = ? AND course_id = ?`, 
+      [studentId, courseId]
+    );
+    console.log('更新结果:', updateResult);
+    
     res.status(200).json({ message: '退课申请已提交' });
   } catch (error) {
-    console.error(error);
+    console.error('申请退课失败:', error.message);
     res.status(500).json({ message: '服务器错误' });
   }
 });
