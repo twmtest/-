@@ -11,15 +11,19 @@
         active-text-color="#ffd04b">
         <el-menu-item index="1">
           <i class="el-icon-s-order"></i>
-          查看课程
+          课程管理
         </el-menu-item>
         <el-menu-item index="2">
-          <i class="el-icon-s-ticket"></i>
-          我的课程
+          <i class="el-icon-s-data"></i>
+          学生成绩管理
         </el-menu-item>
         <el-menu-item index="3">
-          <i class="el-icon-s-data"></i>
-          学生成绩
+          <i class="el-icon-s-check"></i>
+          学生选课管理
+        </el-menu-item>
+        <el-menu-item index="4">
+          <i class="el-icon-s-check"></i>
+          管理选课申请
         </el-menu-item>
       </el-menu>
     </aside>
@@ -31,30 +35,36 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import ViewCourses from './ViewCourses.vue'
-import MyCourses from './MyCourses.vue'
-import StudentGrades from './StudentGrades.vue'
+import { ref } from 'vue'
+import CourseManagement from './CourseManagement.vue'
+import StudentGradesManagement from './StudentGradesManagement.vue'
+import CourseSelectionManagement from './CourseSelectionManagement.vue'
+import ManageCourseApplications from './ManageCourseApplications.vue'
 
 const currentMenu = ref('1')
 
+// 根据 currentMenu 的值计算当前显示的组件
+const currentComponent = ref(CourseManagement)
+
 const handleMenuSelect = (index) => {
   currentMenu.value = index
-}
-
-// 根据 currentMenu 的值计算当前显示的组件
-const currentComponent = computed(() => {
-  switch (currentMenu.value) {
+  switch (index) {
     case '1':
-      return ViewCourses
+      currentComponent.value = CourseManagement
+      break
     case '2':
-      return MyCourses
+      currentComponent.value = StudentGradesManagement
+      break
     case '3':
-      return StudentGrades
+      currentComponent.value = CourseSelectionManagement
+      break
+    case '4':
+      currentComponent.value = ManageCourseApplications
+      break
     default:
-      return ViewCourses
+      currentComponent.value = CourseManagement
   }
-})
+}
 </script>
 
 <style scoped>

@@ -60,9 +60,16 @@ const handleLogin = async () => {
     localStorage.setItem('token', response.token)
     localStorage.setItem('identity', identity.value)
     localStorage.setItem('studentName', response.name)
+    
+    // 根据身份存储相应的 ID
     if (identity.value === 'student') {
-      localStorage.setItem('studentId', response.studentId) // 存储 studentId
+      localStorage.setItem('studentId', response.studentId)
+    } else if (identity.value === 'teacher') {
+      localStorage.setItem('teacherId', response.teacherId)
+    } else if (identity.value === 'admin') {
+      localStorage.setItem('adminId', response.adminId)
     }
+    
     router.push({ name: 'Home' })
   } catch (error) {
     console.error('登录失败:', error.message)

@@ -14,8 +14,15 @@
       <el-table-column prop="location" label="上课地点" />
       <el-table-column label="操作">
         <template #default="{ row }">
-          <el-button @click="viewCourseDetails(row)" size="mini">详情</el-button>
-          <el-button @click="handleSelectCourse(row.course_id)" size="mini" type="primary">选课</el-button>
+          <el-button @click="viewCourseDetails(row)" size="small">详情</el-button>
+          <el-button 
+            @click="applyForCourse(row.course_id)" 
+            size="small" 
+            type="primary"
+            :disabled="isCourseSelected(row.course_id)"
+          >
+            申请选课
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -24,10 +31,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { getCourses, selectCourse as apiSelectCourse } from '@/services/api';
+import { getCourses, getStudentSelections } from '@/services/api';
+import api from '@/services/api';
 
 const courses = ref([]);
 const filteredCourses = ref([]);
+const selectedCourses = ref(new Set());
 const searchName = ref('');
 const searchTeacher = ref('');
 const searchSchedule = ref('');
@@ -37,6 +46,10 @@ onMounted(async () => {
   try {
     courses.value = await getCourses();
     filteredCourses.value = courses.value;
+
+    // 获取学生已选的课程
+    const selections = await getStudentSelections(studentId);
+    selectedCourses.value = new Set(selections.map(sel => sel.course_id));
   } catch (error) {
     console.error('获取课程失败:', error.message);
   }
@@ -59,20 +72,29 @@ const resetFilters = () => {
   filteredCourses.value = courses.value;
 };
 
-const handleSelectCourse = async (courseId) => {
+const applyForCourse = async (courseId) => {
+  console.log('申请选课:', studentId, courseId);
   try {
-    await apiSelectCourse(studentId, courseId);
-    alert('选课成功');
-    // 更新选课列表
-    // 可能需要重新获取选课数据
+    await api.post(`/student/${studentId}/apply-course`, { courseId });
+    alert('选课申请已提交，等待教师审核');
+    selectedCourses.value.add(courseId); // 更新已选课程列表
   } catch (error) {
-    console.error('选课失败:', error.message);
-    alert(error.message);
+    if (error.response && error.response.status === 400) {
+      alert(error.response.data.message); // 显示后端返回的具体错误信息
+    } else {
+      console.error('申请选课失败:', error.message);
+      alert('申请选课失败，请稍后重试');
+    }
   }
 };
 
 const viewCourseDetails = (course) => {
   alert(`课程详情:\n名称: ${course.courseName}\n教师: ${course.teacherName}\n学分: ${course.credit}\n时间: ${course.schedule}\n地点: ${course.location}\n简介: ${course.description}`);
+};
+
+// 检查课程是否已选
+const isCourseSelected = (courseId) => {
+  return selectedCourses.value.has(courseId);
 };
 </script>
 

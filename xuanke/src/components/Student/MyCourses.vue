@@ -10,8 +10,8 @@
         <el-table-column label="操作">
           <template #default="{ row }">
             <el-button 
-              @click="handleDropCourse(row.course_id)" 
-              size="mini" 
+              @click="confirmDropCourse(row)" 
+              size="small" 
               type="danger" 
               :disabled="row.hasGrade"
             >
@@ -20,6 +20,18 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <!-- 退课确认对话框 -->
+      <el-dialog
+        v-model="showDropConfirmDialog"
+        title="确认退课"
+        width="30%">
+        <span>确定要退选课程 "{{ courseToDrop.courseName }}" 吗？</span>
+        <template #footer>
+          <el-button @click="showDropConfirmDialog = false">取消</el-button>
+          <el-button type="danger" @click="dropCourse">退课</el-button>
+        </template>
+      </el-dialog>
     </div>
   </template>
   
@@ -29,6 +41,8 @@
 
     const selectedCourses = ref([]);
     const studentId = localStorage.getItem('studentId'); // 确保 studentId 已正确存储
+    const showDropConfirmDialog = ref(false);
+    const courseToDrop = ref({});
 
     onMounted(async () => {
       try {
@@ -42,11 +56,16 @@
       }
     });
 
-    const handleDropCourse = async (courseId) => {
+    const confirmDropCourse = (course) => {
+      courseToDrop.value = course;
+      showDropConfirmDialog.value = true;
+    };
+
+    const dropCourse = async () => {
       try {
-        await apiDropCourse(studentId, courseId);
+        await apiDropCourse(studentId, courseToDrop.value.course_id);
+        showDropConfirmDialog.value = false;
         alert('退课成功');
-        // 更新选课列表
         const courses = await getStudentCourses(studentId);
         selectedCourses.value = courses.map(course => ({
           ...course,

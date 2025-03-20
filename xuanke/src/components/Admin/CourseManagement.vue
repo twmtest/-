@@ -6,8 +6,8 @@
       <el-table-column prop="teacher" label="授课教师" width="180" />
       <el-table-column label="操作" width="180">
         <template #default="{ row }">
-          <el-button @click="editCourse(row)" size="mini" type="primary">编辑</el-button>
-          <el-button @click="deleteCourse(row)" size="mini" type="danger">删除</el-button>
+          <el-button @click="editCourse(row)" size="small" type="primary">编辑</el-button>
+          <el-button @click="deleteCourse(row)" size="small" type="danger">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
